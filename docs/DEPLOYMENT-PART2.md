@@ -151,7 +151,15 @@ Tiếp tục từ Bước 5 đến Bước 12
          ],
          "Resource": [
            "arn:aws:kms:us-east-1:*:key/*"
-         ]
+         ],
+         "Condition": {
+           "StringEquals": {
+             "kms:ViaService": [
+               "secretsmanager.us-east-1.amazonaws.com",
+               "rds.us-east-1.amazonaws.com"
+             ]
+           }
+         }
        },
        {
          "Effect": "Allow",

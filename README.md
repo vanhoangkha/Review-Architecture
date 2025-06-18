@@ -94,56 +94,29 @@ Network CIDR: 10.0.0.0/16
 Region: us-east-1 (N. Virginia)
 ```
 
-## 🔐 Bước 1: Tạo KMS Key
+## 🔐 Bước 1: Sử dụng KMS Default Keys
 
-### 1.1 Tạo KMS Key cho RDS Encryption
+### 1.1 Xác nhận KMS Default Keys
 
-1. **Truy cập KMS Console**
+AWS cung cấp sẵn các default managed keys cho từng service:
+
+1. **RDS Default Key**
+   - Key alias: `alias/aws/rds`
+   - Tự động có sẵn trong account
+   - Không cần tạo thêm
+
+2. **Secrets Manager Default Key**
+   - Key alias: `alias/aws/secretsmanager`
+   - Tự động có sẵn trong account
+   - Không cần tạo thêm
+
+3. **Kiểm tra Default Keys**
    - AWS Console → Services → Key Management Service (KMS)
-   - Click "Create key"
+   - AWS managed keys → Tìm:
+     - `aws/rds` (cho RDS encryption)
+     - `aws/secretsmanager` (cho Secrets Manager)
 
-2. **Cấu hình Key**
-   ```
-   Key type: Symmetric
-   Key usage: Encrypt and decrypt
-   Advanced options: KMS (default)
-   ```
-   - Click "Next"
-
-3. **Key Details**
-   ```
-   Alias: hospital-rds-key
-   Description: KMS key for Hospital RDS encryption
-   Tags:
-     - Key: Project, Value: Hospital-Management
-     - Key: Environment, Value: Production
-   ```
-   - Click "Next"
-
-4. **Key Administrative Permissions**
-   - Select your IAM user/role
-   - Click "Next"
-
-5. **Key Usage Permissions**
-   - Select your IAM user/role
-   - Add RDS service principal: `rds.amazonaws.com`
-   - Click "Next"
-
-6. **Review và Create**
-   - Review cấu hình
-   - Click "Finish"
-   - **Lưu lại Key ID** để sử dụng sau
-
-### 1.2 Tạo KMS Key cho Secrets Manager
-
-1. **Tạo Key mới**
-   ```
-   Alias: hospital-secrets-key
-   Description: KMS key for Hospital Secrets Manager encryption
-   ```
-
-2. **Cấu hình tương tự như trên**
-   - Add Secrets Manager service principal: `secretsmanager.amazonaws.com`
+**Lưu ý:** Sử dụng default keys giúp đơn giản hóa setup và giảm chi phí (AWS managed keys miễn phí).
 
 ## 🌐 Bước 2: Tạo VPC và Network
 
@@ -233,7 +206,7 @@ Region: us-east-1 (N. Virginia)
    User name: admin
    Password: HospitalRDS2024!@#$
    
-   Encryption key: hospital-secrets-key (KMS key đã tạo)
+   Encryption key: (default) aws/secretsmanager
    ```
 
 3. **Database Configuration**
@@ -272,7 +245,7 @@ Region: us-east-1 (N. Virginia)
    port: 3306
    dbname: wordpress_db
    
-   Encryption key: hospital-secrets-key
+   Encryption key: (default) aws/secretsmanager
    ```
 
 2. **Secret Name**
@@ -395,7 +368,7 @@ Region: us-east-1 (N. Virginia)
    
    Encryption:
    ✅ Enable encryption
-   AWS KMS key: hospital-rds-key (KMS key đã tạo)
+   AWS KMS key: (default) aws/rds
    
    Monitoring:
    ✅ Enable Enhanced monitoring
@@ -459,6 +432,7 @@ Region: us-east-1 (N. Virginia)
 - [Phần 2: Bước 5-12](docs/DEPLOYMENT-PART2.md) - Jump Host, Application Servers, ALB, SSL, WAF, CloudFront
 
 **📚 Tài liệu bổ sung:**
+- [KMS Default Keys](docs/KMS-DEFAULT-KEYS.md) - Hướng dẫn sử dụng AWS managed keys
 - [Cấu hình WAF chi tiết](docs/WAF-CONFIGURATION.md)
 - [Scripts tự động hóa](scripts/)
 
@@ -468,6 +442,13 @@ Region: us-east-1 (N. Virginia)
 - `scripts/wireguard-setup.sh` - Setup WireGuard VPN
 
 ## 💡 Lưu ý quan trọng
+
+### KMS Default Keys
+- ✅ **Miễn phí hoàn toàn** - Không tính phí key usage
+- ✅ **AWS managed** - Tự động rotation và maintenance  
+- ✅ **Đơn giản setup** - Không cần tạo custom keys
+- ✅ **Phù hợp POC/Production** - Đáp ứng yêu cầu bảo mật cơ bản
+- 📖 [Chi tiết về KMS Default Keys](docs/KMS-DEFAULT-KEYS.md)
 
 ### Bảo mật
 - Thay đổi tất cả passwords mặc định
